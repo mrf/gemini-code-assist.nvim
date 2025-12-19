@@ -1,0 +1,29 @@
+# macOS
+.DS_Store
+
+# Beads issue tracker (local cache only - .beads/ is tracked)
+# See .beads/.gitignore for what's excluded within that directory
+
+# Neovim
+*.swp
+*.swo
+*~
+tags
+
+# Logs
+*.log
+
+# Test artifacts
+.luacov
+luacov.stats.out
+luacov.report.out
+
+# Local development
+.env
+.env.local
+
+# Credentials (never commit these)
+credentials.json
+oauth_tokens.json
+*.pem
+*.key
