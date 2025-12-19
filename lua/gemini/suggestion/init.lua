@@ -23,196 +23,196 @@ M._suggestions = {}
 --- Setup suggestion module
 ---@param config GeminiConfig
 function M.setup(config)
-  M._config = config
-  M._enabled = config.suggestion.enabled
+	M._config = config
+	M._enabled = config.suggestion.enabled
 
-  -- Setup autocommands for triggers
-  if config.suggestion.auto_trigger then
-    M._setup_auto_trigger()
-  end
+	-- Setup autocommands for triggers
+	if config.suggestion.auto_trigger then
+		M._setup_auto_trigger()
+	end
 
-  -- Setup highlights
-  require("gemini.ui.highlights").setup(config)
+	-- Setup highlights
+	require("gemini.ui.highlights").setup(config)
 end
 
 --- Setup auto-trigger
 function M._setup_auto_trigger()
-  local group = vim.api.nvim_create_augroup("GeminiSuggestion", { clear = true })
-  local async = require("gemini.util.async")
+	local group = vim.api.nvim_create_augroup("GeminiSuggestion", { clear = true })
+	local async = require("gemini.util.async")
 
-  local trigger, cancel = async.debounce(function()
-    if M._enabled and M._should_trigger() then
-      M.trigger()
-    end
-  end, M._config.suggestion.debounce_ms)
+	local trigger, cancel = async.debounce(function()
+		if M._enabled and M._should_trigger() then
+			M.trigger()
+		end
+	end, M._config.suggestion.debounce_ms)
 
-  vim.api.nvim_create_autocmd({ "TextChangedI", "CursorMovedI" }, {
-    group = group,
-    callback = function()
-      cancel()
-      M.dismiss()
-      trigger()
-    end,
-  })
+	vim.api.nvim_create_autocmd({ "TextChangedI", "CursorMovedI" }, {
+		group = group,
+		callback = function()
+			cancel()
+			M.dismiss()
+			trigger()
+		end,
+	})
 
-  vim.api.nvim_create_autocmd({ "InsertLeave" }, {
-    group = group,
-    callback = function()
-      cancel()
-      M.dismiss()
-    end,
-  })
+	vim.api.nvim_create_autocmd({ "InsertLeave" }, {
+		group = group,
+		callback = function()
+			cancel()
+			M.dismiss()
+		end,
+	})
 
-  -- Clear ghost text when leaving window/buffer or losing focus
-  vim.api.nvim_create_autocmd({ "WinLeave", "BufLeave", "FocusLost" }, {
-    group = group,
-    callback = function()
-      cancel()
-      M.dismiss()
-    end,
-  })
+	-- Clear ghost text when leaving window/buffer or losing focus
+	vim.api.nvim_create_autocmd({ "WinLeave", "BufLeave", "FocusLost" }, {
+		group = group,
+		callback = function()
+			cancel()
+			M.dismiss()
+		end,
+	})
 end
 
 --- Check if suggestion should trigger
 ---@return boolean
 function M._should_trigger()
-  local bufnr = vim.api.nvim_get_current_buf()
+	local bufnr = vim.api.nvim_get_current_buf()
 
-  -- Check if buffer is modifiable
-  if not vim.bo[bufnr].modifiable then
-    return false
-  end
+	-- Check if buffer is modifiable
+	if not vim.bo[bufnr].modifiable then
+		return false
+	end
 
-  -- Check filetype
-  local ft = vim.bo[bufnr].filetype
-  local filetypes = M._config.suggestion.filetypes
+	-- Check filetype
+	local ft = vim.bo[bufnr].filetype
+	local filetypes = M._config.suggestion.filetypes
 
-  if filetypes[ft] == false then
-    return false
-  end
+	if filetypes[ft] == false then
+		return false
+	end
 
-  if filetypes["*"] == false and filetypes[ft] ~= true then
-    return false
-  end
+	if filetypes["*"] == false and filetypes[ft] ~= true then
+		return false
+	end
 
-  -- Check if completion menu is visible
-  if M._config.suggestion.hide_during_completion then
-    if vim.fn.pumvisible() == 1 then
-      return false
-    end
-  end
+	-- Check if completion menu is visible
+	if M._config.suggestion.hide_during_completion then
+		if vim.fn.pumvisible() == 1 then
+			return false
+		end
+	end
 
-  return true
+	return true
 end
 
 --- Trigger a suggestion request
 function M.trigger()
-  local context = require("gemini.context").build_buffer_context()
-  local api = require("gemini.api")
+	local context = require("gemini.context").build_buffer_context()
+	local api = require("gemini.api")
 
-  api.complete(context, function(err, response)
-    if err then
-      require("gemini.util").log.debug("Suggestion error: %s", err.message or "unknown")
-      return
-    end
+	api.complete(context, function(err, response)
+		if err then
+			require("gemini.util").log.debug("Suggestion error: %s", err.message or "unknown")
+			return
+		end
 
-    if response and response.text then
-      M._suggestions = { response.text }
-      M._suggestion_index = 1
-      M._show_suggestion(response.text)
-    end
-  end)
+		if response and response.text then
+			M._suggestions = { response.text }
+			M._suggestion_index = 1
+			M._show_suggestion(response.text)
+		end
+	end)
 end
 
 --- Show a suggestion as ghost text
 ---@param text string
 function M._show_suggestion(text)
-  local ghost_text = require("gemini.suggestion.ghost_text")
-  ghost_text.show(text)
-  M._current_suggestion = text
+	local ghost_text = require("gemini.suggestion.ghost_text")
+	ghost_text.show(text)
+	M._current_suggestion = text
 end
 
 --- Check if a suggestion is visible
 ---@return boolean
 function M.is_visible()
-  return M._current_suggestion ~= nil
+	return M._current_suggestion ~= nil
 end
 
 --- Accept the current suggestion
 function M.accept()
-  if not M._current_suggestion then
-    return
-  end
+	if not M._current_suggestion then
+		return
+	end
 
-  local ghost_text = require("gemini.suggestion.ghost_text")
-  ghost_text.accept()
-  M._current_suggestion = nil
+	local ghost_text = require("gemini.suggestion.ghost_text")
+	ghost_text.accept()
+	M._current_suggestion = nil
 end
 
 --- Accept just the next word
 function M.accept_word()
-  if not M._current_suggestion then
-    return
-  end
+	if not M._current_suggestion then
+		return
+	end
 
-  local ghost_text = require("gemini.suggestion.ghost_text")
-  ghost_text.accept_word()
+	local ghost_text = require("gemini.suggestion.ghost_text")
+	ghost_text.accept_word()
 end
 
 --- Accept just the current line
 function M.accept_line()
-  if not M._current_suggestion then
-    return
-  end
+	if not M._current_suggestion then
+		return
+	end
 
-  local ghost_text = require("gemini.suggestion.ghost_text")
-  ghost_text.accept_line()
+	local ghost_text = require("gemini.suggestion.ghost_text")
+	ghost_text.accept_line()
 end
 
 --- Dismiss the current suggestion
 function M.dismiss()
-  if not M._current_suggestion then
-    return
-  end
+	if not M._current_suggestion then
+		return
+	end
 
-  local ghost_text = require("gemini.suggestion.ghost_text")
-  ghost_text.clear()
-  M._current_suggestion = nil
+	local ghost_text = require("gemini.suggestion.ghost_text")
+	ghost_text.clear()
+	M._current_suggestion = nil
 end
 
 --- Show next suggestion
 function M.next()
-  if #M._suggestions == 0 then
-    return
-  end
+	if #M._suggestions == 0 then
+		return
+	end
 
-  M._suggestion_index = M._suggestion_index % #M._suggestions + 1
-  M._show_suggestion(M._suggestions[M._suggestion_index])
+	M._suggestion_index = M._suggestion_index % #M._suggestions + 1
+	M._show_suggestion(M._suggestions[M._suggestion_index])
 end
 
 --- Show previous suggestion
 function M.prev()
-  if #M._suggestions == 0 then
-    return
-  end
+	if #M._suggestions == 0 then
+		return
+	end
 
-  M._suggestion_index = (M._suggestion_index - 2) % #M._suggestions + 1
-  M._show_suggestion(M._suggestions[M._suggestion_index])
+	M._suggestion_index = (M._suggestion_index - 2) % #M._suggestions + 1
+	M._show_suggestion(M._suggestions[M._suggestion_index])
 end
 
 --- Toggle suggestions
 function M.toggle()
-  M._enabled = not M._enabled
-  if not M._enabled then
-    M.dismiss()
-  end
-  vim.notify("Gemini suggestions: " .. (M._enabled and "enabled" or "disabled"), vim.log.levels.INFO)
+	M._enabled = not M._enabled
+	if not M._enabled then
+		M.dismiss()
+	end
+	vim.notify("Gemini suggestions: " .. (M._enabled and "enabled" or "disabled"), vim.log.levels.INFO)
 end
 
 --- Check if suggestions are enabled
 ---@return boolean
 function M.is_enabled()
-  return M._enabled
+	return M._enabled
 end
 
 return M

@@ -61,79 +61,79 @@ local M = {}
 
 ---@type GeminiConfig
 local defaults = {
-  auth = {
-    api_key = nil, -- Uses GEMINI_API_KEY env var if not set
-  },
+	auth = {
+		api_key = nil, -- Uses GEMINI_API_KEY env var if not set
+	},
 
-  model = {
-    completion = "gemini-2.0-flash",
-    chat = "gemini-2.0-flash",
-    actions = "gemini-2.0-flash",
-  },
+	model = {
+		completion = "gemini-2.0-flash",
+		chat = "gemini-2.0-flash",
+		actions = "gemini-2.0-flash",
+	},
 
-  suggestion = {
-    enabled = true,
-    auto_trigger = true,
-    debounce_ms = 150,
-    max_tokens = 256,
-    hide_during_completion = true,
-    filetypes = {
-      ["*"] = true,
-      gitcommit = false,
-      gitrebase = false,
-      ["."] = false,
-    },
-  },
+	suggestion = {
+		enabled = true,
+		auto_trigger = true,
+		debounce_ms = 150,
+		max_tokens = 256,
+		hide_during_completion = true,
+		filetypes = {
+			["*"] = true,
+			gitcommit = false,
+			gitrebase = false,
+			["."] = false,
+		},
+	},
 
-  chat = {
-    enabled = true,
-    window_type = "floating",
-    width = 0.6,
-    height = 0.8,
-    persist_history = true,
-    auto_context = true,
-  },
+	chat = {
+		enabled = true,
+		window_type = "floating",
+		width = 0.6,
+		height = 0.8,
+		persist_history = true,
+		auto_context = true,
+	},
 
-  actions = {
-    enabled = true,
-    preview_diff = true,
-    auto_apply = false,
-  },
+	actions = {
+		enabled = true,
+		preview_diff = true,
+		auto_apply = false,
+	},
 
-  exclude = {
-    "*.env",
-    "*.key",
-    "*.pem",
-    "secrets/*",
-    "node_modules/*",
-  },
+	exclude = {
+		"*.env",
+		"*.key",
+		"*.pem",
+		"secrets/*",
+		"node_modules/*",
+	},
 
-  keymaps = {
-    accept = "<Tab>",
-    accept_word = "<C-Right>",
-    accept_line = "<C-Down>",
-    dismiss = "<C-]>",
-    next = "<M-]>",
-    prev = "<M-[>",
-    toggle_chat = "<leader>gc",
-    generate = "<leader>gg",
-    fix = "<leader>gf",
-    test = "<leader>gt",
-  },
+	keymaps = {
+		accept = "<Tab>",
+		accept_word = "<C-Right>",
+		accept_line = "<C-Down>",
+		dismiss = "<C-]>",
+		next = "<M-]>",
+		prev = "<M-[>",
+		toggle_chat = "<leader>gc",
+		generate = "<leader>gg",
+		fix = "<leader>gf",
+		test = "<leader>gt",
+	},
 
-  ui = {
-    suggestion_hl = "Comment",
-    icons = {
-      suggestion = "",
-      loading = "",
-      error = "",
-    },
-  },
+	ui = {
+		suggestion_hl = "Comment",
+		icons = {
+			suggestion = "",
+			loading = "",
+			error = "",
+		},
+	},
 
-  log = {
-    level = "warn",
-    file = nil,
-  },
+	log = {
+		level = "warn",
+		file = nil,
+	},
 }
 
 --- Deep merge two tables
@@ -141,35 +141,35 @@ local defaults = {
 ---@param t2 table Override table
 ---@return table
 local function deep_merge(t1, t2)
-  local result = vim.deepcopy(t1)
-  for k, v in pairs(t2) do
-    if type(v) == "table" and type(result[k]) == "table" then
-      result[k] = deep_merge(result[k], v)
-    else
-      result[k] = v
-    end
-  end
-  return result
+	local result = vim.deepcopy(t1)
+	for k, v in pairs(t2) do
+		if type(v) == "table" and type(result[k]) == "table" then
+			result[k] = deep_merge(result[k], v)
+		else
+			result[k] = v
+		end
+	end
+	return result
 end
 
 --- Setup configuration with user options
 ---@param opts? GeminiConfig User configuration
 ---@return GeminiConfig
 function M.setup(opts)
-  local config = deep_merge(defaults, opts or {})
+	local config = deep_merge(defaults, opts or {})
 
-  -- Check for API key in environment if not provided
-  if not config.auth.api_key then
-    config.auth.api_key = vim.env.GEMINI_API_KEY
-  end
+	-- Check for API key in environment if not provided
+	if not config.auth.api_key then
+		config.auth.api_key = vim.env.GEMINI_API_KEY
+	end
 
-  return config
+	return config
 end
 
 --- Get default configuration
 ---@return GeminiConfig
 function M.get_defaults()
-  return vim.deepcopy(defaults)
+	return vim.deepcopy(defaults)
 end
 
 return M

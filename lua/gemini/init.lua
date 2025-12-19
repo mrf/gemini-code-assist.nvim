@@ -26,59 +26,59 @@ M._initialized = false
 --- Setup the plugin with user configuration
 ---@param opts? GeminiConfig User configuration
 function M.setup(opts)
-  if M._initialized then
-    vim.notify("Gemini: Already initialized", vim.log.levels.WARN)
-    return
-  end
+	if M._initialized then
+		vim.notify("Gemini: Already initialized", vim.log.levels.WARN)
+		return
+	end
 
-  local config = require("gemini.config")
-  M.config = config.setup(opts or {})
+	local config = require("gemini.config")
+	M.config = config.setup(opts or {})
 
-  -- Initialize core modules
-  local util = require("gemini.util")
-  util.setup(M.config)
+	-- Initialize core modules
+	local util = require("gemini.util")
+	util.setup(M.config)
 
-  -- Initialize authentication
-  require("gemini.auth").setup(M.config)
+	-- Initialize authentication
+	require("gemini.auth").setup(M.config)
 
-  -- Register commands
-  require("gemini.commands").setup(M.config)
+	-- Register commands
+	require("gemini.commands").setup(M.config)
 
-  -- Setup keymaps if enabled
-  if M.config.keymaps then
-    require("gemini.keymaps").setup(M.config)
-  end
+	-- Setup keymaps if enabled
+	if M.config.keymaps then
+		require("gemini.keymaps").setup(M.config)
+	end
 
-  -- Initialize suggestion module if enabled
-  if M.config.suggestion and M.config.suggestion.enabled then
-    require("gemini.suggestion").setup(M.config)
-  end
+	-- Initialize suggestion module if enabled
+	if M.config.suggestion and M.config.suggestion.enabled then
+		require("gemini.suggestion").setup(M.config)
+	end
 
-  -- Initialize chat module if enabled
-  if M.config.chat and M.config.chat.enabled then
-    require("gemini.chat").setup(M.config)
-  end
+	-- Initialize chat module if enabled
+	if M.config.chat and M.config.chat.enabled then
+		require("gemini.chat").setup(M.config)
+	end
 
-  -- Initialize actions module if enabled
-  if M.config.actions and M.config.actions.enabled then
-    require("gemini.actions").setup(M.config)
-  end
+	-- Initialize actions module if enabled
+	if M.config.actions and M.config.actions.enabled then
+		require("gemini.actions").setup(M.config)
+	end
 
-  M._initialized = true
+	M._initialized = true
 
-  util.log.info("Gemini Code Assist initialized")
+	util.log.info("Gemini Code Assist initialized")
 end
 
 --- Check if the plugin is initialized
 ---@return boolean
 function M.is_initialized()
-  return M._initialized
+	return M._initialized
 end
 
 --- Get the current configuration
 ---@return GeminiConfig
 function M.get_config()
-  return M.config
+	return M.config
 end
 
 return M
