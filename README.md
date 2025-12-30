@@ -1,4 +1,4 @@
-# gemini-code-assist.nvim
+# Gemini Code Assist for Neovim
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 

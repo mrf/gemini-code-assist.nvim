@@ -20,6 +20,9 @@ M._suggestion_index = 1
 ---@type table[]
 M._suggestions = {}
 
+---@type boolean Flag to prevent re-triggering during accept
+M._accepting = false
+
 --- Setup suggestion module
 ---@param config GeminiConfig
 function M.setup(config)
@@ -76,6 +79,11 @@ end
 --- Check if suggestion should trigger
 ---@return boolean
 function M._should_trigger()
+	-- Don't trigger during accept operation (prevents race condition)
+	if M._accepting then
+		return false
+	end
+
 	local bufnr = vim.api.nvim_get_current_buf()
 
 	-- Check if buffer is modifiable
@@ -144,9 +152,19 @@ function M.accept()
 		return
 	end
 
+	-- Prevent re-triggering during the accept operation
+	M._accepting = true
+
 	local ghost_text = require("gemini.suggestion.ghost_text")
 	ghost_text.accept()
 	M._current_suggestion = nil
+
+	-- Clear the flag after debounce period to prevent race condition
+	-- with TextChangedI that fires from the text insert
+	local debounce_ms = M._config and M._config.suggestion.debounce_ms or 150
+	vim.defer_fn(function()
+		M._accepting = false
+	end, debounce_ms + 50)
 end
 
 --- Accept just the next word
@@ -155,8 +173,17 @@ function M.accept_word()
 		return
 	end
 
+	-- Prevent re-triggering during the accept operation
+	M._accepting = true
+
 	local ghost_text = require("gemini.suggestion.ghost_text")
 	ghost_text.accept_word()
+
+	-- Clear the flag after debounce period to prevent race condition
+	local debounce_ms = M._config and M._config.suggestion.debounce_ms or 150
+	vim.defer_fn(function()
+		M._accepting = false
+	end, debounce_ms + 50)
 end
 
 --- Accept just the current line
@@ -165,8 +192,17 @@ function M.accept_line()
 		return
 	end
 
+	-- Prevent re-triggering during the accept operation
+	M._accepting = true
+
 	local ghost_text = require("gemini.suggestion.ghost_text")
 	ghost_text.accept_line()
+
+	-- Clear the flag after debounce period to prevent race condition
+	local debounce_ms = M._config and M._config.suggestion.debounce_ms or 150
+	vim.defer_fn(function()
+		M._accepting = false
+	end, debounce_ms + 50)
 end
 
 --- Dismiss the current suggestion
